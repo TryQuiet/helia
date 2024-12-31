@@ -1,2 +1,2 @@
 [submodule "3rd-party/helia"]
-	branch = main
+	branch = submodule
