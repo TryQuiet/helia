@@ -11,13 +11,11 @@ import { type KadDHT, kadDHT } from '@libp2p/kad-dht'
 import { keychain, type Keychain } from '@libp2p/keychain'
 import { mplex } from '@libp2p/mplex'
 import { ping, type PingService } from '@libp2p/ping'
-import { webRTC, webRTCDirect } from '@libp2p/webrtc'
 import { webSockets } from '@libp2p/websockets'
 import { ipnsSelector } from 'ipns/selector'
 import { ipnsValidator } from 'ipns/validator'
 import * as libp2pInfo from 'libp2p/version'
 import { name, version } from '../version.js'
-import { bootstrapConfig } from './bootstrappers.js'
 import type { Libp2pDefaultsOptions } from './libp2p.js'
 import type { Libp2pOptions } from 'libp2p'
 
@@ -40,13 +38,10 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
     addresses: {
       listen: [
         '/p2p-circuit',
-        '/webrtc'
       ]
     },
     transports: [
       circuitRelayTransport(),
-      webRTC(),
-      webRTCDirect(),
       webSockets()
     ],
     connectionEncrypters: [
@@ -55,9 +50,6 @@ export function libp2pDefaults (options: Libp2pDefaultsOptions = {}): Libp2pOpti
     streamMuxers: [
       yamux(),
       mplex()
-    ],
-    peerDiscovery: [
-      bootstrap(bootstrapConfig)
     ],
     services: {
       autoNAT: autoNAT(),

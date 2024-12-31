@@ -19,13 +19,10 @@
  * ```
  */
 
-import { bitswap, trustlessGateway } from '@helia/block-brokers'
-import { httpGatewayRouting, libp2pRouting } from '@helia/routers'
-import { MemoryBlockstore } from 'blockstore-core'
-import { MemoryDatastore } from 'datastore-core'
+import { bitswap } from '@helia/block-brokers'
+import { libp2pRouting } from '@helia/routers'
 import { HeliaP2P } from './helia-p2p.js'
 import { libp2pDefaults } from './utils/libp2p-defaults.js'
-import { createLibp2p } from './utils/libp2p.js'
 import type { DefaultLibp2pServices } from './utils/libp2p-defaults.js'
 import type { Libp2pDefaultsOptions } from './utils/libp2p.js'
 import type { Helia } from '@helia/interface'
@@ -90,41 +87,24 @@ export interface HeliaLibp2p<T extends Libp2p = Libp2p<DefaultLibp2pServices>> e
 export async function createHelia <T extends Libp2p> (init: Partial<HeliaInit<T>>): Promise<HeliaLibp2p<T>>
 export async function createHelia (init?: Partial<HeliaInit<Libp2p<DefaultLibp2pServices>>>): Promise<HeliaLibp2p<Libp2p<DefaultLibp2pServices>>>
 export async function createHelia (init: Partial<HeliaInit> = {}): Promise<HeliaLibp2p> {
-  const datastore = init.datastore ?? new MemoryDatastore()
-  const blockstore = init.blockstore ?? new MemoryBlockstore()
+  const { datastore, blockstore, libp2p } = init
 
-  let libp2p: Libp2p<DefaultLibp2pServices>
-
-  if (isLibp2p(init.libp2p)) {
-    libp2p = init.libp2p as any
-  } else {
-    libp2p = await createLibp2p<DefaultLibp2pServices>({
-      ...init,
-      libp2p: {
-        dns: init.dns,
-        ...init.libp2p,
-
-        // ignore the libp2p start parameter as it should be on the main init
-        // object instead
-        start: undefined
-      },
-      datastore
-    })
+  if (!isLibp2p(libp2p)) {
+    throw new Error(`Must provide a libp2p instance!`)
   }
+
+  if (datastore == null || blockstore == null) {
+    throw new Error(`Must provide a valid datastore AND blockstore!`)
+  }
+
 
   const helia = new HeliaP2P({
     ...init,
-    libp2p,
+    libp2p: libp2p as any,
     datastore,
     blockstore,
-    blockBrokers: init.blockBrokers ?? [
-      trustlessGateway(),
-      bitswap()
-    ],
-    routers: init.routers ?? [
-      libp2pRouting(libp2p),
-      httpGatewayRouting()
-    ],
+    blockBrokers: init.blockBrokers ?? [bitswap()],
+    routers: [libp2pRouting(libp2p)],
     metrics: libp2p.metrics
   })
 
