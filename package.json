@@ -44,5 +44,13 @@
   "type": "module",
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "volta": {
+    "node": "20.18.0",
+    "npm": "10.9.0"
+  },
+  "engines": {
+    "node": "20.18.0",
+    "npm": "10.9.0"
+  }
 }
